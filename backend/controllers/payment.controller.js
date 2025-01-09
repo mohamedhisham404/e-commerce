@@ -1,7 +1,7 @@
 import { httpStatus } from "../utils/httpStatus.js";
 import Order from "../models/order.model.js";
 import Coupon from "../models/coupon.model.js";
-import {stripe} from "../lib/stripe.js";
+import { stripe } from "../lib/stripe.js";
 import dotenv from "dotenv";
 
 dotenv.config({ path: "../../.env" });
@@ -77,7 +77,8 @@ export const createCheckoutSession = async (req, res) => {
             },
         });
 
-        if(totalAmount >20000) {//200$
+        if (totalAmount > 20000) {
+            //200$
             await createNewCoupon(req.user._id);
         }
 
@@ -85,7 +86,7 @@ export const createCheckoutSession = async (req, res) => {
             status: httpStatus.SUCCESS,
             data: {
                 id: session.id,
-                totalAmount: totalAmount/100
+                totalAmount: totalAmount / 100,
             },
         });
     } catch (error) {
@@ -96,27 +97,77 @@ export const createCheckoutSession = async (req, res) => {
     }
 };
 
+export const checkoutSuccess = async (req, res) => {
+    try {
+        const { sessionId } = req.body;
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (session.payment_status === "paid") {
+            if (session.metadata.couponCode) {//if the coupon is used, deactivate it
+                await Coupon.findOneAndUpdate(
+                    {
+                        code: session.metadata.couponCode,
+                        userId: session.metadata.userId,
+                    },
+                    {
+                        isActive: false,
+                    }
+                );
+            }
+
+            // create a new Order
+            const products = JSON.parse(session.metadata.products);
+            const newOrder = new Order({
+                user: session.metadata.userId,
+                products: products.map((product) => ({
+                    product: product.id,
+                    quantity: product.quantity,
+                    price: product.price,
+                })),
+                totalAmount: session.amount_total / 100, // convert from cents to dollars,
+                stripeSessionId: sessionId,
+            });
+
+            await newOrder.save();
+
+            res.status(200).json({
+                status: httpStatus.SUCCESS,
+                data: {
+                    success: true,
+                    message:
+                        "Payment successful, order created, and coupon deactivated if used.",
+                    orderId: newOrder._id,
+                },
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            status: httpStatus.ERROR,
+            data: error.message,
+        });
+    }
+};
 
 async function createStripeCoupon(discountPercentage) {
-	const coupon = await stripe.coupons.create({
-		percent_off: discountPercentage,
-		duration: "once",
-	});
+    const coupon = await stripe.coupons.create({
+        percent_off: discountPercentage,
+        duration: "once",
+    });
 
-	return coupon.id;
+    return coupon.id;
 }
 
 async function createNewCoupon(userId) {
-	await Coupon.findOneAndDelete({ userId });
+    await Coupon.findOneAndDelete({ userId });
 
-	const newCoupon = new Coupon({
-		code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(),
-		discountPercentage: 10,
-		expirationDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
-		userId: userId,
-	});
+    const newCoupon = new Coupon({
+        code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        discountPercentage: 10,
+        expirationDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+        userId: userId,
+    });
 
-	await newCoupon.save();
+    await newCoupon.save();
 
-	return newCoupon;
+    return newCoupon;
 }
