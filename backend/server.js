@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 
 //Routes
 import authRoutes from "./routes/auth.route.js";
+import productRoutes from "./routes/produt.route.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(
 );
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/products", productRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server started on http://localhost:${PORT}`);
