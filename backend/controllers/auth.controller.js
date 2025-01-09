@@ -113,8 +113,8 @@ export const logout = async (req, res) => {
 
 export const refreshToken = async (req, res) => {
     try {
-        const refreshToken  = req.cookies.refreshToken;
-        
+        const refreshToken = req.cookies.refreshToken;
+
         if (!refreshToken) {
             return res.status(401).json({
                 status: httpStatus.FAIL,
@@ -154,21 +154,7 @@ export const refreshToken = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select("-password");
-
-        if (!user) {
-            return res.status(404).json({
-                status: httpStatus.FAIL,
-                data: "User not found",
-            });
-        }
-
-        res.status(200).json({
-            status: httpStatus.SUCCESS,
-            data: {
-                user,
-            },
-        });
+        res.json(req.user);
     } catch (error) {
         res.status(500).json({
             status: httpStatus.ERROR,
@@ -176,4 +162,3 @@ export const getProfile = async (req, res) => {
         });
     }
 };
-
