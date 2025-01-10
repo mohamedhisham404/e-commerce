@@ -32,12 +32,12 @@ app.use(
     })
 );
 
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/products", productRoutes);
-app.use("/api/v1/cart", cartRoutes);
-app.use("/api/v1/coupons", couponRoutes);
-app.use("/api/v1/payments", paymentRoutes);
-app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server started on http://localhost:${PORT}`);
