@@ -68,6 +68,18 @@ export const useProductStore = create((set) => ({
             toast.error(error.response.data.data || 'An error occurred');
             console.log(error.response.data);
         }
+    },
+
+    fetchProductsByCategory: async (category) => {
+        set({loading: true});
+        try {
+            const res = await axios.get(`/products/category/${category}`);
+            set({products: res.data.data, loading: false});
+        } catch (error) {
+            set({loading: false});
+            toast.error(error.response.data.data || 'An error occurred');
+            console.log(error.response.data);
+        }
     }
 }));
     
