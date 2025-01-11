@@ -5,7 +5,7 @@ import { httpStatus } from "../utils/httpStatus.js";
 
 const router = express.Router();
 
-router.get('/profile',protectRoute , adminRoute ,async (req, res) => {
+router.get('/',protectRoute , adminRoute ,async (req, res) => {
     try {
         const analyticsData = await getAnalyticsData();
 
