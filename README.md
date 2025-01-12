@@ -1,4 +1,4 @@
-# Threads Clone 
+# E-Commerce Platform 
 
 Welcome to the **E-Commerce Platform** repository! This project is a full-stack web application, developed using the **MERN stack** (MongoDB, Express.js, React, Node.js).  
 
